@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Мой питомец</title>
+<title>Мой питомец 🐱</title>
 <style>
   body {
     margin: 0;
     font-family: 'Segoe UI', Tahoma, sans-serif;
-    background: #f9f9f9;
+    background: linear-gradient(135deg, #f9f9f9, #e8f4ff);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -16,20 +16,26 @@
   }
   #game-container {
     background: #fff;
-    border-radius: 12px;
+    border-radius: 16px;
     padding: 20px;
     width: 320px;
     text-align: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   }
   h1 {
     margin-bottom: 10px;
     font-size: 24px;
     color: #333;
   }
-  #pet-img {
-    width: 150px;
-    margin-bottom: 15px;
+  #pet-emoji {
+    font-size: 80px;
+    margin-bottom: 10px;
+    filter: drop-shadow(0 0 10px gold);
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+  @keyframes glow {
+    from { filter: drop-shadow(0 0 5px gold); }
+    to { filter: drop-shadow(0 0 20px gold); }
   }
   #level, #progress, #coins {
     margin: 5px 0;
@@ -56,153 +62,194 @@
     font-size: 14px;
     color: #555;
   }
+  #mini-game-area {
+    margin-top: 10px;
+    display: none;
+  }
+  #mini-game-area input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 6px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 16px;
+  }
 </style>
 </head>
 <body>
 
 <div id="game-container">
   <h1>Мой питомец</h1>
-  <img id="pet-img" src="https://i.imgur.com/4AiXzf8.png" alt="Котёнок">
-  <div id="level">Уровень: 1</div>
-  <div id="progress">Прогресс: 0%</div>
-  <div id="coins">Монеты: 10</div>
+  <div id="pet-emoji">🐱</div>
 
-  <button id="feed-btn">Покормить (5)</button>
+  <div id="level"></div>
+  <div id="progress"></div>
+  <div id="coins"></div>
+
+  <button id="feed-btn">Покормить</button>
   <div id="timer-feed"></div>
 
   <button id="bonus-btn">Бонус</button>
   <div id="timer-bonus"></div>
 
   <button id="mini-game-btn">Мини-игра</button>
+
+  <div id="mini-game-area">
+    <div id="mini-task"></div>
+    <input type="number" id="mini-answer" placeholder="Ответ">
+    <button id="mini-submit">Отправить</button>
+  </div>
 </div>
 
 <script>
-  let level = 1;
-  let progress = 0;
-  let coins = 10;
+  // ================== ДАННЫЕ ==================
+  let state = {
+    level: 1,
+    progress: 0,
+    coins: 10,
+    feedCount: 5,
+    feedCooldown: 0,
+    bonusCooldown: 0
+  };
 
-  // Кормление
-  let feedCount = 5;
-  let feedTimer = null;
-
-  const feedBtn = document.getElementById('feed-btn');
-  const bonusBtn = document.getElementById('bonus-btn');
-  const miniBtn = document.getElementById('mini-game-btn');
   const levelEl = document.getElementById('level');
-  const progressEl = document.getElementById('progress');
-  const coinsEl = document.getElementById('coins');
-  const timerFeedEl = document.getElementById('timer-feed');
-  const timerBonusEl = document.getElementById('timer-bonus');
+    const progressEl = document.getElementById('progress');
+    const coinsEl = document.getElementById('coins');
+    const feedBtn = document.getElementById('feed-btn');
+    const bonusBtn = document.getElementById('bonus-btn');
+    const miniBtn = document.getElementById('mini-game-btn');
+    const timerFeedEl = document.getElementById('timer-feed');
+    const timerBonusEl = document.getElementById('timer-bonus');
+    const miniArea = document.getElementById('mini-game-area');
+    const miniTask = document.getElementById('mini-task');
+    const miniAnswer = document.getElementById('mini-answer');
+    const miniSubmit = document.getElementById('mini-submit');
 
+  let feedInterval, bonusInterval, cooldownInterval;
+  let currentMiniAnswer = null;
+
+  // ================== СОХРАНЕНИЕ ==================
+  function saveState() {
+    localStorage.setItem('petGameState', JSON.stringify(state));
+  }
+  function loadState() {
+    const saved = localStorage.getItem('petGameState');
+    if (saved) {
+      state = JSON.parse(saved);
+    }
+  }
+
+  // ================== UI ==================
   function updateUI() {
-    levelEl.textContent = `Уровень: ${level}`;
-    progressEl.textContent = `Прогресс: ${progress.toFixed(1)}%`;
-    coinsEl.textContent = `Монеты: ${coins}`;
-    feedBtn.textContent = `Покормить (${feedCount})`;
+    levelEl.textContent = `Уровень: ${state.level}`;
+    progressEl.textContent = `Прогресс: ${state.progress.toFixed(1)}%`;
+    coinsEl.textContent = `Монеты: ${state.coins}`;
+    feedBtn.textContent = `Покормить (${state.feedCount})`;
+    feedBtn.disabled = state.feedCount <= 0;
+    bonusBtn.disabled = state.bonusCooldown > 0;
   }
 
   function increaseProgress(amount) {
-    progress += amount;
-    if (progress >= 100) {
-      progress -= 100;
-      level++;
+    state.progress += amount;
+    if (state.progress >= 100) {
+      state.progress -= 100;
+      state.level++;
     }
+    if (state.progress < 0) state.progress = 0;
   }
 
-  // Кормление
+  // ================== КОРМЛЕНИЕ ==================
   feedBtn.addEventListener('click', () => {
-    if (feedCount > 0) {
-      if (feedCount === 5) increaseProgress(2); // бонус за первое кормление
-      increaseProgress(0.75);
-      feedCount--;
+    if (state.feedCount > 0) {
+      increaseProgress(state.feedCount === 5 ? 2 : 0.75);
+      state.feedCount--;
+      if (state.feedCount === 0) {
+        state.feedCooldown = 120;
+      }
+      saveState();
       updateUI();
-
-      if (feedCount === 0) {
-        feedBtn.disabled = true;
-        let remaining = 120; // 2 минуты
-        timerFeedEl.textContent = `Доступно через: 2:00`;
-        feedTimer = setInterval(() => {
-          remaining--;
-          let min = Math.floor(remaining/60);
-          let sec = remaining % 60;
-          timerFeedEl.textContent = `Доступно через: ${min}:${sec.toString().padStart(2,'0')}`;
-          if (remaining <= 0) {
-            clearInterval(feedTimer);
-            feedCount = 5;
-            feedBtn.disabled = false;
-            timerFeedEl.textContent = '';
-            updateUI();
-          }
-        },1000);
-      }
     }
   });
 
-  // Бонус
-  let bonusReady = true;
+  // ================== БОНУС ==================
   bonusBtn.addEventListener('click', () => {
-    if (!bonusReady) return;
-    bonusReady = false;
-    let reward = Math.random() < 0.5 ? 'coins' : 'exp';
+    const reward = Math.random() < 0.5 ? 'coins' : 'exp';
     if (reward === 'coins') {
-      let amount = Math.floor(Math.random()*3)+1;
-      coins += amount;
-      alert(`Бонус: +${amount} монет!`);
+      const amount = Math.floor(Math.random()*3)+1;
+      state.coins += amount;
     } else {
-      let amount = (Math.random()*0.6+0.2).toFixed(2);
-      increaseProgress(parseFloat(amount));
-      alert(`Бонус: +${amount}% к прогрессу!`);
+      const amount = +(Math.random()*0.6+0.2).toFixed(2);
+      increaseProgress(amount);
     }
+    state.bonusCooldown = 30;
+    saveState();
     updateUI();
-    let remaining = 30;
-    timerBonusEl.textContent = `Доступно через: 0:30`;
-    bonusBtn.disabled = true;
-    let bonusTimer = setInterval(() => {
-      remaining--;
-      let min = Math.floor(remaining/60);
-      let sec = remaining % 60;
-      timerBonusEl.textContent = `Доступно через: ${min}:${sec.toString().padStart(2,'0')}`;
-      if (remaining <= 0) {
-        clearInterval(bonusTimer);
-        bonusBtn.disabled = false;
-        timerBonusEl.textContent = '';
-        bonusReady = true;
-      }
-    },1000);
   });
 
-  // Мини-игра
+  // ================== МИНИ-ИГРА ==================
   miniBtn.addEventListener('click', () => {
-    if (coins <= 0) {
-      alert('Недостаточно монет');
-      return;
-    }
-    let a = Math.floor(Math.random()*100)+1;
-    let b = Math.floor(Math.random()*100)+1;
-    let ops = ['+','-','*','/'];
-    let op = ops[Math.floor(Math.random()*4)];
-    let answer = prompt(`Сколько будет ${a} ${op} ${b}?`);
-    let correct;
+    miniArea.style.display = 'block';
+    const a = Math.floor(Math.random()*50)+1;
+    const b = Math.floor(Math.random()*50)+1;
+    const ops = ['+','-','*'];
+    const op = ops[Math.floor(Math.random()*ops.length)];
+    miniTask.textContent = `Сколько будет ${a} ${op} ${b}?`;
     switch(op){
-      case '+': correct = a+b; break;
-      case '-': correct = a-b; break;
-      case '*': correct = a*b; break;
-      case '/': correct = +(a/b).toFixed(2); break;
+      case '+': currentMiniAnswer = a+b; break;
+      case '-': currentMiniAnswer = a-b; break;
+      case '*': currentMiniAnswer = a*b; break;
     }
-    if (parseFloat(answer) === correct) {
-      coins += 1;
+    miniAnswer.value = '';
+    miniAnswer.focus();
+  });
+
+  miniSubmit.addEventListener('click', () => {
+    const ans = Number(miniAnswer.value);
+    if (ans === currentMiniAnswer) {
+      state.coins += 1;
       increaseProgress(0.1);
-      alert('Верно! +1 монета, +0.1% к прогрессу');
     } else {
-      coins = Math.max(0, coins-1);
+      state.coins = Math.max(0, state.coins-1);
       increaseProgress(-0.5);
-      alert(`Неверно! -1 монета, -0.5% к прогрессу. Правильный ответ: ${correct}`);
     }
+    miniArea.style.display = 'none';
+    saveState();
     updateUI();
   });
 
-  // Инициализация UI
+  // ================== ТАЙМЕРЫ ==================
+  function tickCooldowns() {
+    if (state.feedCooldown > 0) {
+      state.feedCooldown--;
+      let m = Math.floor(state.feedCooldown/60);
+      let s = state.feedCooldown%60;
+      timerFeedEl.textContent = `Доступно через: ${m}:${s.toString().padStart(2,'0')}`;
+      feedBtn.disabled = true;
+      if (state.feedCooldown === 0) {
+        state.feedCount = 5;
+        timerFeedEl.textContent = '';
+      }
+    }
+
+    if (state.bonusCooldown > 0) {
+      state.bonusCooldown--;
+      let m = Math.floor(state.bonusCooldown/60);
+      let s = state.bonusCooldown%60;
+      timerBonusEl.textContent = `Доступно через: ${m}:${s.toString().padStart(2,'0')}`;
+      bonusBtn.disabled = true;
+      if (state.bonusCooldown === 0) {
+        timerBonusEl.textContent = '';
+      }
+    }
+    saveState();
+    updateUI();
+  }
+
+  // ================== ЗАПУСК ==================
+  loadState();
   updateUI();
+  cooldownInterval = setInterval(tickCooldowns, 1000);
 </script>
 </body>
 </html>
