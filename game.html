@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Мой питомец - Играть</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="game-container">
+    <h2>Котёнок</h2>
+    <div id="level">Уровень: 1</div>
+    <div id="progress-container">
+      <div id="progress-bar"></div>
+    </div>
+    <div id="coins">Монеты: 10</div>
+
+    <div class="buttons">
+      <button id="feed-btn">Покормить</button>
+      <button id="play-btn" disabled>Играть</button>
+      <button id="walk-btn" disabled>Прогулка</button>
+      <button id="earn-btn">Заработать монетки</button>
+      <button onclick="location.href='store.html'">Магазин</button>
+    </div>
+  </div>
+
+  <!-- Модальное окно мини-игры -->
+  <div id="math-modal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="math-close">&times;</span>
+      <p id="math-question"></p>
+      <input type="number" id="math-answer">
+      <button id="math-submit">Ок</button>
+    </div>
+  </div>
+
+  <!-- Уведомление -->
+  <div id="notification" class="modal">
+    <div class="modal-content">
+      <span class="close" id="notif-close">&times;</span>
+      <p id="notif-text"></p>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+  <script src="mathgame.js"></script>
+</body>
+</html>
