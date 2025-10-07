@@ -21,7 +21,31 @@
     width: 320px;
     text-align: center;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    position: relative;
   }
+  #notification {
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ffd166;
+    color: #333;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.4s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+  #notification.show {
+    top: -10px;
+    opacity: 1;
+  }
+  #notification.coins { background: #ffd166; }
+  #notification.exp { background: #4cc9f0; color: white; }
+
   h1 {
     margin-bottom: 10px;
     font-size: 24px;
@@ -80,6 +104,7 @@
 <body>
 
 <div id="game-container">
+  <div id="notification"></div>
   <h1>Мой питомец</h1>
   <div id="pet-emoji">🐱</div>
 
@@ -114,20 +139,30 @@
   };
 
   const levelEl = document.getElementById('level');
-    const progressEl = document.getElementById('progress');
-    const coinsEl = document.getElementById('coins');
-    const feedBtn = document.getElementById('feed-btn');
-    const bonusBtn = document.getElementById('bonus-btn');
-    const miniBtn = document.getElementById('mini-game-btn');
-    const timerFeedEl = document.getElementById('timer-feed');
-    const timerBonusEl = document.getElementById('timer-bonus');
-    const miniArea = document.getElementById('mini-game-area');
-    const miniTask = document.getElementById('mini-task');
-    const miniAnswer = document.getElementById('mini-answer');
-    const miniSubmit = document.getElementById('mini-submit');
+  const progressEl = document.getElementById('progress');
+  const coinsEl = document.getElementById('coins');
+  const feedBtn = document.getElementById('feed-btn');
+  const bonusBtn = document.getElementById('bonus-btn');
+  const miniBtn = document.getElementById('mini-game-btn');
+  const timerFeedEl = document.getElementById('timer-feed');
+  const timerBonusEl = document.getElementById('timer-bonus');
+  const miniArea = document.getElementById('mini-game-area');
+  const miniTask = document.getElementById('mini-task');
+  const miniAnswer = document.getElementById('mini-answer');
+  const miniSubmit = document.getElementById('mini-submit');
+  const notification = document.getElementById('notification');
 
-  let feedInterval, bonusInterval, cooldownInterval;
   let currentMiniAnswer = null;
+
+  // ================== УВЕДОМЛЕНИЯ ==================
+  function showNotification(type, text) {
+    notification.textContent = text;
+    notification.className = '';
+    notification.classList.add('show', type);
+    setTimeout(() => {
+      notification.classList.remove('show');
+    }, 2500);
+  }
 
   // ================== СОХРАНЕНИЕ ==================
   function saveState() {
@@ -135,9 +170,7 @@
   }
   function loadState() {
     const saved = localStorage.getItem('petGameState');
-    if (saved) {
-      state = JSON.parse(saved);
-    }
+    if (saved) state = JSON.parse(saved);
   }
 
   // ================== UI ==================
@@ -162,7 +195,9 @@
   // ================== КОРМЛЕНИЕ ==================
   feedBtn.addEventListener('click', () => {
     if (state.feedCount > 0) {
-      increaseProgress(state.feedCount === 5 ? 2 : 0.75);
+      const exp = state.feedCount === 5 ? 2 : 0.75;
+      increaseProgress(exp);
+      showNotification('exp', `+${exp}% опыта`);
       state.feedCount--;
       if (state.feedCount === 0) {
         state.feedCooldown = 120;
@@ -178,9 +213,11 @@
     if (reward === 'coins') {
       const amount = Math.floor(Math.random()*3)+1;
       state.coins += amount;
+      showNotification('coins', `+${amount} бонусных монет`);
     } else {
       const amount = +(Math.random()*0.6+0.2).toFixed(2);
       increaseProgress(amount);
+      showNotification('exp', `+${amount}% бонусного опыта`);
     }
     state.bonusCooldown = 30;
     saveState();
@@ -209,9 +246,11 @@
     if (ans === currentMiniAnswer) {
       state.coins += 1;
       increaseProgress(0.1);
+      showNotification('coins', '+1 монета');
     } else {
       state.coins = Math.max(0, state.coins-1);
       increaseProgress(-0.5);
+      showNotification('exp', '-0.5% опыта, -1 монета');
     }
     miniArea.style.display = 'none';
     saveState();
@@ -249,7 +288,7 @@
   // ================== ЗАПУСК ==================
   loadState();
   updateUI();
-  cooldownInterval = setInterval(tickCooldowns, 1000);
+  setInterval(tickCooldowns, 1000);
 </script>
 </body>
 </html>
