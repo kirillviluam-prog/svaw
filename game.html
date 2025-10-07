@@ -1,48 +1,208 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Мой питомец - Играть</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Мой питомец</title>
+<style>
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: #f9f9f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  #game-container {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    width: 320px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  h1 {
+    margin-bottom: 10px;
+    font-size: 24px;
+    color: #333;
+  }
+  #pet-img {
+    width: 150px;
+    margin-bottom: 15px;
+  }
+  #level, #progress, #coins {
+    margin: 5px 0;
+    font-weight: bold;
+  }
+  button {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  #feed-btn { background: #ffd166; }
+  #feed-btn:disabled { background: #ffe8a1; cursor: default; }
+  #bonus-btn { background: #06d6a0; }
+  #bonus-btn:disabled { background: #a3f0d6; cursor: default; }
+  #mini-game-btn { background: #118ab2; color: #fff; }
+  #mini-game-btn:disabled { background: #a0cfe0; cursor: default; }
+  #timer-feed, #timer-bonus {
+    font-size: 14px;
+    color: #555;
+  }
+</style>
 </head>
 <body>
-  <div class="game-container">
-    <h2>Котёнок</h2>
-    <div id="level">Уровень: 1</div>
-    <div id="progress-container">
-      <div id="progress-bar"></div>
-    </div>
-    <div id="coins">Монеты: 10</div>
 
-    <div class="buttons">
-      <button id="feed-btn">Покормить</button>
-      <button id="play-btn" disabled>Играть</button>
-      <button id="walk-btn" disabled>Прогулка</button>
-      <button id="earn-btn">Заработать монетки</button>
-      <button onclick="location.href='store.html'">Магазин</button>
-    </div>
-  </div>
+<div id="game-container">
+  <h1>Мой питомец</h1>
+  <img id="pet-img" src="https://i.imgur.com/4AiXzf8.png" alt="Котёнок">
+  <div id="level">Уровень: 1</div>
+  <div id="progress">Прогресс: 0%</div>
+  <div id="coins">Монеты: 10</div>
 
-  <!-- Модальное окно мини-игры -->
-  <div id="math-modal" class="modal">
-    <div class="modal-content">
-      <span class="close" id="math-close">&times;</span>
-      <p id="math-question"></p>
-      <input type="number" id="math-answer">
-      <button id="math-submit">Ок</button>
-    </div>
-  </div>
+  <button id="feed-btn">Покормить (5)</button>
+  <div id="timer-feed"></div>
 
-  <!-- Уведомление -->
-  <div id="notification" class="modal">
-    <div class="modal-content">
-      <span class="close" id="notif-close">&times;</span>
-      <p id="notif-text"></p>
-    </div>
-  </div>
+  <button id="bonus-btn">Бонус</button>
+  <div id="timer-bonus"></div>
 
-  <script src="game.js"></script>
-  <script src="mathgame.js"></script>
+  <button id="mini-game-btn">Мини-игра</button>
+</div>
+
+<script>
+  let level = 1;
+  let progress = 0;
+  let coins = 10;
+
+  // Кормление
+  let feedCount = 5;
+  let feedTimer = null;
+
+  const feedBtn = document.getElementById('feed-btn');
+  const bonusBtn = document.getElementById('bonus-btn');
+  const miniBtn = document.getElementById('mini-game-btn');
+  const levelEl = document.getElementById('level');
+  const progressEl = document.getElementById('progress');
+  const coinsEl = document.getElementById('coins');
+  const timerFeedEl = document.getElementById('timer-feed');
+  const timerBonusEl = document.getElementById('timer-bonus');
+
+  function updateUI() {
+    levelEl.textContent = `Уровень: ${level}`;
+    progressEl.textContent = `Прогресс: ${progress.toFixed(1)}%`;
+    coinsEl.textContent = `Монеты: ${coins}`;
+    feedBtn.textContent = `Покормить (${feedCount})`;
+  }
+
+  function increaseProgress(amount) {
+    progress += amount;
+    if (progress >= 100) {
+      progress -= 100;
+      level++;
+    }
+  }
+
+  // Кормление
+  feedBtn.addEventListener('click', () => {
+    if (feedCount > 0) {
+      if (feedCount === 5) increaseProgress(2); // бонус за первое кормление
+      increaseProgress(0.75);
+      feedCount--;
+      updateUI();
+
+      if (feedCount === 0) {
+        feedBtn.disabled = true;
+        let remaining = 120; // 2 минуты
+        timerFeedEl.textContent = `Доступно через: 2:00`;
+        feedTimer = setInterval(() => {
+          remaining--;
+          let min = Math.floor(remaining/60);
+          let sec = remaining % 60;
+          timerFeedEl.textContent = `Доступно через: ${min}:${sec.toString().padStart(2,'0')}`;
+          if (remaining <= 0) {
+            clearInterval(feedTimer);
+            feedCount = 5;
+            feedBtn.disabled = false;
+            timerFeedEl.textContent = '';
+            updateUI();
+          }
+        },1000);
+      }
+    }
+  });
+
+  // Бонус
+  let bonusReady = true;
+  bonusBtn.addEventListener('click', () => {
+    if (!bonusReady) return;
+    bonusReady = false;
+    let reward = Math.random() < 0.5 ? 'coins' : 'exp';
+    if (reward === 'coins') {
+      let amount = Math.floor(Math.random()*3)+1;
+      coins += amount;
+      alert(`Бонус: +${amount} монет!`);
+    } else {
+      let amount = (Math.random()*0.6+0.2).toFixed(2);
+      increaseProgress(parseFloat(amount));
+      alert(`Бонус: +${amount}% к прогрессу!`);
+    }
+    updateUI();
+    let remaining = 30;
+    timerBonusEl.textContent = `Доступно через: 0:30`;
+    bonusBtn.disabled = true;
+    let bonusTimer = setInterval(() => {
+      remaining--;
+      let min = Math.floor(remaining/60);
+      let sec = remaining % 60;
+      timerBonusEl.textContent = `Доступно через: ${min}:${sec.toString().padStart(2,'0')}`;
+      if (remaining <= 0) {
+        clearInterval(bonusTimer);
+        bonusBtn.disabled = false;
+        timerBonusEl.textContent = '';
+        bonusReady = true;
+      }
+    },1000);
+  });
+
+  // Мини-игра
+  miniBtn.addEventListener('click', () => {
+    if (coins <= 0) {
+      alert('Недостаточно монет');
+      return;
+    }
+    let a = Math.floor(Math.random()*100)+1;
+    let b = Math.floor(Math.random()*100)+1;
+    let ops = ['+','-','*','/'];
+    let op = ops[Math.floor(Math.random()*4)];
+    let answer = prompt(`Сколько будет ${a} ${op} ${b}?`);
+    let correct;
+    switch(op){
+      case '+': correct = a+b; break;
+      case '-': correct = a-b; break;
+      case '*': correct = a*b; break;
+      case '/': correct = +(a/b).toFixed(2); break;
+    }
+    if (parseFloat(answer) === correct) {
+      coins += 1;
+      increaseProgress(0.1);
+      alert('Верно! +1 монета, +0.1% к прогрессу');
+    } else {
+      coins = Math.max(0, coins-1);
+      increaseProgress(-0.5);
+      alert(`Неверно! -1 монета, -0.5% к прогрессу. Правильный ответ: ${correct}`);
+    }
+    updateUI();
+  });
+
+  // Инициализация UI
+  updateUI();
+</script>
 </body>
 </html>
