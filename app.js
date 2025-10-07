@@ -3,7 +3,7 @@
    NOTE: implicit flow returns access_token in URL hash; no refresh token.
 */
 const CLIENT_ID = 'b5a0c12ba7154ea2836d4f4fcde3fb21';
-const REDIRECT_URI = 'https://kirillviluam-prog.github.io/svaw-/callback.html';
+const REDIRECT_URI = 'https://kirillviluam-prog.github.io/svaw/callback.html';
 const SCOPES = [
   'user-read-playback-state',
   'user-modify-playback-state',
