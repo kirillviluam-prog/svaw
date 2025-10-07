@@ -1,0 +1,61 @@
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(to right, #a8edea, #fed6e3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.game-container {
+    background: rgba(255,255,255,0.97);
+    padding: 20px 20px;
+    border-radius: 25px;
+    text-align: center;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+    max-width: 450px;
+    width: 95%;
+}
+
+#pet-container {
+    width: 100%;
+    height: 350px;
+    margin: 0 auto 20px;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.stats {
+    margin: 15px 0;
+    font-size: 18px;
+}
+
+.actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.actions button {
+    padding: 15px;
+    font-size: 18px;
+    border: none;
+    border-radius: 15px;
+    background: linear-gradient(135deg, #ffd700, #ffbf00);
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.actions button:hover {
+    transform: scale(1.05);
+    background: linear-gradient(135deg, #ffbf00, #ffd700);
+}
+
+@media (min-width: 600px) {
+    .actions {
+        flex-direction: row;
+        justify-content: center;
+    }
+}
