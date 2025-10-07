@@ -1,0 +1,12 @@
+<!doctype html>
+<html><body>
+<script>
+// This page is used as redirect target for implicit flow; it contains token in URL hash.
+// We simply forward user to index.html (hash preserved) so index.js can read token.
+if(location.hash){
+  location.replace('/'); // index.html will parse hash
+}else{
+  document.body.innerText = 'No token returned.';
+}
+</script>
+</body></html>
