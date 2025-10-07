@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Мой удивительный питомец</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="game">
+    <h1>Мой удивительный питомец</h1>
+    <div id="pet">
+      <img id="pet-img" src="assets/pet_happy.png" alt="Питомец">
+    </div>
+    <div id="stats">
+      <p>Сытость: <span id="hunger">100</span></p>
+      <p>Настроение: <span id="mood">100</span></p>
+      <p>Чистота: <span id="clean">100</span></p>
+      <p>Энергия: <span id="energy">100</span></p>
+    </div>
+    <div id="actions">
+      <button onclick="feedPet()">Покормить</button>
+      <button onclick="playWithPet()">Играть</button>
+      <button onclick="cleanPet()">Помыть</button>
+      <button onclick="restPet()">Отдохнуть</button>
+    </div>
+  </div>
+<script src="game.js"></script>
+</body>
+</html>
