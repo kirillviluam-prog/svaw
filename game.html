@@ -1,294 +1,562 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Мой питомец 🐱</title>
 <style>
-  body {
-    margin: 0;
-    font-family: 'Segoe UI', Tahoma, sans-serif;
-    background: linear-gradient(135deg, #f9f9f9, #e8f4ff);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+  :root{
+    --bg1:#f9f9f9;
+    --bg2:#e8f4ff;
+    --card:#fff;
+    --muted:#666;
+    --gold:#ffd166;
+    --blue:#4cc9f0;
+    --green:#06d6a0;
+    --accent:#118ab2;
   }
-  #game-container {
-    background: #fff;
-    border-radius: 16px;
-    padding: 20px;
-    width: 320px;
-    text-align: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    position: relative;
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:Inter, "Segoe UI", Tahoma, sans-serif;
+    background:linear-gradient(135deg,var(--bg1),var(--bg2));
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
   }
-  #notification {
-    position: absolute;
-    top: -40px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #ffd166;
-    color: #333;
-    padding: 8px 12px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: bold;
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.4s ease;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  .card{
+    width: 360px;
+    max-width:100%;
+    background:var(--card);
+    border-radius:16px;
+    padding:18px;
+    box-shadow:0 6px 20px rgba(0,0,0,0.12);
+    position:relative;
   }
-  #notification.show {
-    top: -10px;
-    opacity: 1;
-  }
-  #notification.coins { background: #ffd166; }
-  #notification.exp { background: #4cc9f0; color: white; }
 
-  h1 {
-    margin-bottom: 10px;
-    font-size: 24px;
-    color: #333;
+  /* notification strip */
+  #notification{
+    position:absolute;
+    top:-44px;
+    left:50%;
+    transform:translateX(-50%);
+    padding:8px 14px;
+    border-radius:20px;
+    font-weight:600;
+    font-size:14px;
+    box-shadow:0 6px 12px rgba(0,0,0,0.12);
+    opacity:0;
+    transition:all .35s ease;
+    pointer-events:none;
   }
-  #pet-emoji {
-    font-size: 80px;
-    margin-bottom: 10px;
-    filter: drop-shadow(0 0 10px gold);
-    animation: glow 2s ease-in-out infinite alternate;
+  #notification.show{ top:-14px; opacity:1 }
+  #notification.coins{ background:var(--gold); color:#333 }
+  #notification.exp{ background:var(--blue); color:#fff }
+  #notification.buy{ background:#8b5cf6; color:#fff }
+
+  h1{ font-size:20px; margin:0 0 6px 0; text-align:center }
+  #pet-emoji{ font-size:72px; display:block; text-align:center; filter:drop-shadow(0 0 10px gold); animation:glow 2s ease-in-out infinite alternate; margin:6px 0 12px; }
+  @keyframes glow { from{filter:drop-shadow(0 0 6px gold)} to{filter:drop-shadow(0 0 18px gold)} }
+
+  .row{display:flex;gap:8px;align-items:center;justify-content:space-between;margin:6px 0}
+  .stat{font-weight:700}
+  .muted{color:var(--muted); font-size:13px}
+
+  button{
+    border:0;
+    border-radius:10px;
+    padding:11px;
+    font-size:15px;
+    cursor:pointer;
   }
-  @keyframes glow {
-    from { filter: drop-shadow(0 0 5px gold); }
-    to { filter: drop-shadow(0 0 20px gold); }
-  }
-  #level, #progress, #coins {
-    margin: 5px 0;
-    font-weight: bold;
-  }
-  button {
-    display: block;
-    width: 100%;
-    padding: 12px;
-    margin: 8px 0;
-    font-size: 16px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  #feed-btn { background: #ffd166; }
-  #feed-btn:disabled { background: #ffe8a1; cursor: default; }
-  #bonus-btn { background: #06d6a0; }
-  #bonus-btn:disabled { background: #a3f0d6; cursor: default; }
-  #mini-game-btn { background: #118ab2; color: #fff; }
-  #mini-game-btn:disabled { background: #a0cfe0; cursor: default; }
-  #timer-feed, #timer-bonus {
-    font-size: 14px;
-    color: #555;
-  }
-  #mini-game-area {
-    margin-top: 10px;
-    display: none;
-  }
-  #mini-game-area input {
-    width: 100%;
-    padding: 8px;
-    margin-top: 6px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    text-align: center;
-    font-size: 16px;
-  }
+  .btn-block{width:100%; display:block}
+  .feed{background:var(--gold)}
+  .feed[disabled]{opacity:.6;cursor:default}
+  .bonus{background:var(--green)}
+  .mini{background:var(--accent); color:#fff}
+  .nav{background:#efefef}
+  .small{padding:8px 10px; font-size:13px}
+
+  #timer-feed,#timer-bonus,#timer-mulcoins,#timer-mulexp,#timer-catch{color:var(--muted); font-size:13px; margin-top:6px}
+
+  /* mini-game area hidden by default */
+  #mini-game-area{ display:none; margin-top:10px; }
+  #mini-game-area input{ width:100%; padding:8px; margin-top:8px; border-radius:8px; border:1px solid #ddd; font-size:15px; text-align:center }
+
+  /* shop / catch pages */
+  .page{ display:none }
+  .page.active{ display:block }
+  .nav-row{ display:flex; gap:8px; margin-top:8px }
+  .shop-item{ display:flex; justify-content:space-between; align-items:center; padding:10px; border-radius:10px; background:#fafafa; margin-top:8px }
+  .grid{ display:grid; gap:6px; grid-template-columns:repeat(5,1fr); margin-top:10px }
+  .cell{ background:#fff; border-radius:8px; height:54px; display:flex; align-items:center; justify-content:center; font-size:24px; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.06) }
+  .cell.disabled{opacity:.5; cursor:default}
+  .home-btn{ background:#efefef; border-radius:10px; padding:8px; font-size:14px }
+  .bottom-row{ margin-top:12px; display:flex; gap:8px }
 </style>
 </head>
 <body>
+  <div class="card" role="application">
+    <div id="notification" aria-live="polite"></div>
 
-<div id="game-container">
-  <div id="notification"></div>
-  <h1>Мой питомец</h1>
-  <div id="pet-emoji">🐱</div>
+    <!-- MAIN PAGE -->
+    <div id="page-main" class="page active">
+      <div style="text-align:center">
+        <div id="pet-emoji">🐱</div>
+        <h1>Мой питомец</h1>
+      </div>
 
-  <div id="level"></div>
-  <div id="progress"></div>
-  <div id="coins"></div>
+      <div class="row">
+        <div>
+          <div class="stat" id="level">Уровень: 1</div>
+          <div class="muted" id="progress">Прогресс: 0%</div>
+        </div>
+        <div style="text-align:right">
+          <div class="stat" id="coins">Монеты: 10</div>
+          <div class="muted" id="coins-extra"> </div>
+        </div>
+      </div>
 
-  <button id="feed-btn">Покормить</button>
-  <div id="timer-feed"></div>
+      <!-- multipliers display -->
+      <div id="timer-mulcoins"></div>
+      <div id="timer-mulexp"></div>
 
-  <button id="bonus-btn">Бонус</button>
-  <div id="timer-bonus"></div>
+      <div style="margin-top:10px">
+        <button id="feed-btn" class="btn-block feed">Покормить</button>
+        <div id="timer-feed" class="muted"></div>
 
-  <button id="mini-game-btn">Мини-игра</button>
+        <button id="bonus-btn" class="btn-block bonus" style="margin-top:8px">Бонус</button>
+        <div id="timer-bonus" class="muted"></div>
 
-  <div id="mini-game-area">
-    <div id="mini-task"></div>
-    <input type="number" id="mini-answer" placeholder="Ответ">
-    <button id="mini-submit">Отправить</button>
+        <button id="mini-game-btn" class="btn-block mini" style="margin-top:8px">Мини-игра</button>
+        <div id="mini-game-area">
+          <div id="mini-task" class="muted"></div>
+          <input id="mini-answer" type="number" placeholder="Ответ" />
+          <div class="bottom-row">
+            <button id="mini-submit" class="btn-block small" style="flex:1;background:#118ab2;color:#fff;border-radius:8px">Отправить</button>
+            <button id="mini-cancel" class="home-btn" style="flex:1">Отмена</button>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-top:10px">
+          <button id="open-shop" class="nav-btn nav" style="flex:1">Бонусный магазин</button>
+          <button id="open-catch" class="nav-btn nav" style="flex:1">Отлов</button>
+        </div>
+
+        <div id="timer-catch" class="muted" style="margin-top:8px"></div>
+      </div>
+    </div>
+
+    <!-- SHOP PAGE -->
+    <div id="page-shop" class="page">
+      <div style="display:flex; align-items:center; justify-content:space-between">
+        <div>
+          <h1 style="margin:0">Бонусный магазин</h1>
+          <div class="muted">Купите усиления — их можно продлевать</div>
+        </div>
+        <button id="shop-home" class="home-btn">Домой</button>
+      </div>
+
+      <div class="shop-item">
+        <div>
+          <div style="font-weight:700">x2 Монет</div>
+          <div class="muted">Действует 10 минут, удваивает монеты от действий</div>
+        </div>
+        <div style="text-align:right">
+          <div id="shop-coins-time" class="muted">Осталось: —</div>
+          <button id="buy-coins" class="small" style="margin-top:8px;background:var(--gold)">Купить / Продлить</button>
+        </div>
+      </div>
+
+      <div class="shop-item">
+        <div>
+          <div style="font-weight:700">x2 Опыт</div>
+          <div class="muted">Действует 15 минут, удваивает опыт от действий</div>
+        </div>
+        <div style="text-align:right">
+          <div id="shop-exp-time" class="muted">Осталось: —</div>
+          <button id="buy-exp" class="small" style="margin-top:8px;background:var(--blue);color:#fff">Купить / Продлить</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CATCH PAGE -->
+    <div id="page-catch" class="page">
+      <div style="display:flex; align-items:center; justify-content:space-between">
+        <div>
+          <h1 style="margin:0">Отлов животных</h1>
+          <div class="muted">Поле 5×5 — нажми на эмодзи, чтобы поймать</div>
+        </div>
+        <button id="catch-home" class="home-btn">Домой</button>
+      </div>
+
+      <div id="catch-grid" class="grid"></div>
+
+      <div style="display:flex; gap:8px; margin-top:10px">
+        <button id="refresh-grid" class="small" style="flex:1">Обновить поле</button>
+        <button id="catch-clear" class="small" style="flex:1">Очистить поле</button>
+      </div>
+
+      <div id="catch-note" class="muted" style="margin-top:8px">Играть можно раз в 5 минут</div>
+    </div>
+
   </div>
-</div>
 
 <script>
-  // ================== ДАННЫЕ ==================
-  let state = {
-    level: 1,
-    progress: 0,
-    coins: 10,
-    feedCount: 5,
-    feedCooldown: 0,
-    bonusCooldown: 0
-  };
+/* ======== State & persistence ======== */
+const SAVE_KEY = 'petGameState_v2';
+let state = {
+  level:1,
+  progress:0,
+  coins:10,
+  // feed: 5 uses then reset at feedRestoreAt (timestamp ms)
+  feedCount:5,
+  feedRestoreAt:0,
+  // bonus button (30s) available at bonusAvailableAt
+  bonusAvailableAt:0,
+  // multiplier timestamps (ms) until when active
+  coinMultUntil:0,
+  expMultUntil:0,
+  // catch cooldown: allowed at or after catchAvailableAt
+  catchAvailableAt:0,
+};
 
-  const levelEl = document.getElementById('level');
-  const progressEl = document.getElementById('progress');
-  const coinsEl = document.getElementById('coins');
-  const feedBtn = document.getElementById('feed-btn');
-  const bonusBtn = document.getElementById('bonus-btn');
-  const miniBtn = document.getElementById('mini-game-btn');
-  const timerFeedEl = document.getElementById('timer-feed');
-  const timerBonusEl = document.getElementById('timer-bonus');
-  const miniArea = document.getElementById('mini-game-area');
-  const miniTask = document.getElementById('mini-task');
-  const miniAnswer = document.getElementById('mini-answer');
-  const miniSubmit = document.getElementById('mini-submit');
-  const notification = document.getElementById('notification');
+function saveState(){ localStorage.setItem(SAVE_KEY, JSON.stringify(state)); }
+function loadState(){ try{ const s=localStorage.getItem(SAVE_KEY); if(s) state = Object.assign(state, JSON.parse(s)); }catch(e){} }
 
-  let currentMiniAnswer = null;
+/* ======== UI refs ======== */
+const notification = document.getElementById('notification');
+const levelEl = document.getElementById('level');
+const progressEl = document.getElementById('progress');
+const coinsEl = document.getElementById('coins');
+const coinsExtra = document.getElementById('coins-extra');
 
-  // ================== УВЕДОМЛЕНИЯ ==================
-  function showNotification(type, text) {
-    notification.textContent = text;
-    notification.className = '';
-    notification.classList.add('show', type);
-    setTimeout(() => {
-      notification.classList.remove('show');
-    }, 2500);
+const feedBtn = document.getElementById('feed-btn');
+const timerFeedEl = document.getElementById('timer-feed');
+
+const bonusBtn = document.getElementById('bonus-btn');
+const timerBonusEl = document.getElementById('timer-bonus');
+
+const miniBtn = document.getElementById('mini-game-btn');
+const miniArea = document.getElementById('mini-game-area');
+const miniTask = document.getElementById('mini-task');
+const miniAnswer = document.getElementById('mini-answer');
+const miniSubmit = document.getElementById('mini-submit');
+const miniCancel = document.getElementById('mini-cancel');
+
+const openShop = document.getElementById('open-shop');
+const pageMain = document.getElementById('page-main');
+const pageShop = document.getElementById('page-shop');
+const pageCatch = document.getElementById('page-catch');
+const shopHome = document.getElementById('shop-home');
+const catchHome = document.getElementById('catch-home');
+
+const shopCoinsTime = document.getElementById('shop-coins-time');
+const shopExpTime = document.getElementById('shop-exp-time');
+const buyCoins = document.getElementById('buy-coins');
+const buyExp = document.getElementById('buy-exp');
+
+const timerMulCoins = document.getElementById('timer-mulcoins');
+const timerMulExp = document.getElementById('timer-mulexp');
+
+const openCatch = document.getElementById('open-catch');
+const catchGrid = document.getElementById('catch-grid');
+const refreshGrid = document.getElementById('refresh-grid');
+const clearGrid = document.getElementById('catch-clear');
+const timerCatchEl = document.getElementById('timer-catch');
+
+/* ======== Helpful helpers ======== */
+function nowMs(){ return Date.now(); }
+function formatRemaining(ms){
+  if(ms<=0) return '—';
+  let s = Math.max(0, Math.ceil(ms/1000));
+  let m = Math.floor(s/60);
+  let sec = s % 60;
+  return `${m}:${sec.toString().padStart(2,'0')}`;
+}
+function showNotification(type, text){
+  notification.textContent = text;
+  notification.className = '';
+  notification.classList.add('show', type);
+  // if buy notification, keep slightly longer
+  const timeout = (type==='buy')? 3000 : 2200;
+  setTimeout(()=> notification.classList.remove('show'), timeout);
+}
+
+/* ======== Core gameplay functions ======== */
+function updateUI(){
+  levelEl.textContent = `Уровень: ${state.level}`;
+  progressEl.textContent = `Прогресс: ${state.progress.toFixed(1)}%`;
+  coinsEl.textContent = `Монеты: ${state.coins}`;
+  // feed button
+  feedBtn.textContent = `Покормить (${state.feedCount})`;
+  feedBtn.disabled = state.feedCount <= 0;
+  // bonus
+  const bonusReady = nowMs() >= state.bonusAvailableAt;
+  bonusBtn.disabled = !bonusReady;
+  // multipliers time displays
+  const cRem = Math.max(0, state.coinMultUntil - nowMs());
+  const eRem = Math.max(0, state.expMultUntil - nowMs());
+  timerMulCoins.textContent = cRem>0 ? `x2 монет — осталось ${formatRemaining(cRem)}` : '';
+  timerMulExp.textContent = eRem>0 ? `x2 опыта — осталось ${formatRemaining(eRem)}` : '';
+  shopCoinsTime.textContent = cRem>0 ? `Осталось: ${formatRemaining(cRem)}` : 'Осталось: —';
+  shopExpTime.textContent = eRem>0 ? `Осталось: ${formatRemaining(eRem)}` : 'Осталось: —';
+  // catch timer
+  const catchRem = Math.max(0, state.catchAvailableAt - nowMs());
+  timerCatchEl.textContent = catchRem>0 ? `Следующий отлов: ${formatRemaining(catchRem)}` : 'Отлов доступен';
+  timerFeedEl.textContent = (state.feedCount>0) ? '' : `Доступно через: ${formatRemaining(Math.max(0, state.feedRestoreAt - nowMs()))}`;
+  timerBonusEl.textContent = bonusReady ? '' : `Доступно через: ${formatRemaining(Math.max(0, state.bonusAvailableAt - nowMs()))}`;
+  // coinsExtra (show if multiplier active)
+  coinsExtra.textContent = (cRem>0 || eRem>0) ? ((cRem>0?'x2 монет ':'') + (eRem>0?'x2 опыта':'')) : '';
+}
+
+/* apply multipliers to coin/exp amounts */
+function applyCoinMultiplier(amount){
+  if(state.coinMultUntil > nowMs()) return Math.round(amount * 2);
+  return amount;
+}
+function applyExpMultiplier(amount){
+  if(state.expMultUntil > nowMs()) return amount * 2;
+  return amount;
+}
+
+function increaseProgress(amount){
+  state.progress += amount;
+  // level up loop
+  while(state.progress >= 100){
+    state.progress -= 100;
+    state.level++;
   }
+  if(state.progress < 0) state.progress = 0;
+}
 
-  // ================== СОХРАНЕНИЕ ==================
-  function saveState() {
-    localStorage.setItem('petGameState', JSON.stringify(state));
+/* ======== Feeding ======== */
+/* On click: if feedCount>0 then:
+   - first feed in batch (feedCount==5) gives +2 level (we'll convert to 2%?) — keep as +2 level per earlier requirement
+   - each feed gives +0.75% progress
+*/
+feedBtn.addEventListener('click', ()=>{
+  if(state.feedCount<=0) return;
+  // first feed special +2 level
+  if(state.feedCount === 5){
+    state.level += 2; // as requested: "Первое кормление даёт +2 к уровню"
+    showNotification('exp', `Вам начислено +2 уровня`);
   }
-  function loadState() {
-    const saved = localStorage.getItem('petGameState');
-    if (saved) state = JSON.parse(saved);
+  const expGain = applyExpMultiplier(0.75);
+  increaseProgress(expGain);
+  showNotification('exp', `Вам начислено +${expGain}% опыта`);
+  state.feedCount--;
+  if(state.feedCount <= 0){
+    // set restore at now + 2 minutes
+    state.feedRestoreAt = nowMs() + 2*60*1000;
   }
-
-  // ================== UI ==================
-  function updateUI() {
-    levelEl.textContent = `Уровень: ${state.level}`;
-    progressEl.textContent = `Прогресс: ${state.progress.toFixed(1)}%`;
-    coinsEl.textContent = `Монеты: ${state.coins}`;
-    feedBtn.textContent = `Покормить (${state.feedCount})`;
-    feedBtn.disabled = state.feedCount <= 0;
-    bonusBtn.disabled = state.bonusCooldown > 0;
-  }
-
-  function increaseProgress(amount) {
-    state.progress += amount;
-    if (state.progress >= 100) {
-      state.progress -= 100;
-      state.level++;
-    }
-    if (state.progress < 0) state.progress = 0;
-  }
-
-  // ================== КОРМЛЕНИЕ ==================
-  feedBtn.addEventListener('click', () => {
-    if (state.feedCount > 0) {
-      const exp = state.feedCount === 5 ? 2 : 0.75;
-      increaseProgress(exp);
-      showNotification('exp', `+${exp}% опыта`);
-      state.feedCount--;
-      if (state.feedCount === 0) {
-        state.feedCooldown = 120;
-      }
-      saveState();
-      updateUI();
-    }
-  });
-
-  // ================== БОНУС ==================
-  bonusBtn.addEventListener('click', () => {
-    const reward = Math.random() < 0.5 ? 'coins' : 'exp';
-    if (reward === 'coins') {
-      const amount = Math.floor(Math.random()*3)+1;
-      state.coins += amount;
-      showNotification('coins', `+${amount} бонусных монет`);
-    } else {
-      const amount = +(Math.random()*0.6+0.2).toFixed(2);
-      increaseProgress(amount);
-      showNotification('exp', `+${amount}% бонусного опыта`);
-    }
-    state.bonusCooldown = 30;
-    saveState();
-    updateUI();
-  });
-
-  // ================== МИНИ-ИГРА ==================
-  miniBtn.addEventListener('click', () => {
-    miniArea.style.display = 'block';
-    const a = Math.floor(Math.random()*50)+1;
-    const b = Math.floor(Math.random()*50)+1;
-    const ops = ['+','-','*'];
-    const op = ops[Math.floor(Math.random()*ops.length)];
-    miniTask.textContent = `Сколько будет ${a} ${op} ${b}?`;
-    switch(op){
-      case '+': currentMiniAnswer = a+b; break;
-      case '-': currentMiniAnswer = a-b; break;
-      case '*': currentMiniAnswer = a*b; break;
-    }
-    miniAnswer.value = '';
-    miniAnswer.focus();
-  });
-
-  miniSubmit.addEventListener('click', () => {
-    const ans = Number(miniAnswer.value);
-    if (ans === currentMiniAnswer) {
-      state.coins += 1;
-      increaseProgress(0.1);
-      showNotification('coins', '+1 монета');
-    } else {
-      state.coins = Math.max(0, state.coins-1);
-      increaseProgress(-0.5);
-      showNotification('exp', '-0.5% опыта, -1 монета');
-    }
-    miniArea.style.display = 'none';
-    saveState();
-    updateUI();
-  });
-
-  // ================== ТАЙМЕРЫ ==================
-  function tickCooldowns() {
-    if (state.feedCooldown > 0) {
-      state.feedCooldown--;
-      let m = Math.floor(state.feedCooldown/60);
-      let s = state.feedCooldown%60;
-      timerFeedEl.textContent = `Доступно через: ${m}:${s.toString().padStart(2,'0')}`;
-      feedBtn.disabled = true;
-      if (state.feedCooldown === 0) {
-        state.feedCount = 5;
-        timerFeedEl.textContent = '';
-      }
-    }
-
-    if (state.bonusCooldown > 0) {
-      state.bonusCooldown--;
-      let m = Math.floor(state.bonusCooldown/60);
-      let s = state.bonusCooldown%60;
-      timerBonusEl.textContent = `Доступно через: ${m}:${s.toString().padStart(2,'0')}`;
-      bonusBtn.disabled = true;
-      if (state.bonusCooldown === 0) {
-        timerBonusEl.textContent = '';
-      }
-    }
-    saveState();
-    updateUI();
-  }
-
-  // ================== ЗАПУСК ==================
-  loadState();
+  saveState();
   updateUI();
-  setInterval(tickCooldowns, 1000);
+});
+
+/* tick to restore feed if time passed */
+function checkFeedRestore(){
+  if(state.feedCount <= 0 && state.feedRestoreAt && nowMs() >= state.feedRestoreAt){
+    state.feedCount = 5;
+    state.feedRestoreAt = 0;
+    saveState();
+    updateUI();
+  }
+}
+
+/* ======== Bonus button ======== */
+bonusBtn.addEventListener('click', ()=>{
+  if(nowMs() < state.bonusAvailableAt) return;
+  const rewardIsCoins = Math.random() < 0.5;
+  if(rewardIsCoins){
+    const amount = Math.floor(Math.random()*3)+1; // 1..3
+    const final = applyCoinMultiplier(amount);
+    state.coins += final;
+    showNotification('coins', `+${final} бонусных монет`);
+  } else {
+    const amount = +(Math.random()*0.6 + 0.2).toFixed(2); // 0.2..0.8
+    const final = applyExpMultiplier(amount);
+    increaseProgress(final);
+    showNotification('exp', `+${final}% бонусного опыта`);
+  }
+  // set 30s cooldown
+  state.bonusAvailableAt = nowMs() + 30*1000;
+  saveState();
+  updateUI();
+});
+
+/* ======== Mini-game (arithmetic) ======== */
+let currentMiniAnswer = null;
+miniBtn.addEventListener('click', ()=>{
+  miniArea.style.display = 'block';
+  const a = Math.floor(Math.random()*50)+1;
+  const b = Math.floor(Math.random()*50)+1;
+  const ops = ['+','-','*'];
+  const op = ops[Math.floor(Math.random()*ops.length)];
+  miniTask.textContent = `Сколько будет ${a} ${op} ${b}?`;
+  switch(op){
+    case '+': currentMiniAnswer = a+b; break;
+    case '-': currentMiniAnswer = a-b; break;
+    case '*': currentMiniAnswer = a*b; break;
+  }
+  miniAnswer.value = '';
+  miniAnswer.focus();
+});
+miniCancel.addEventListener('click', ()=> miniArea.style.display='none');
+
+miniSubmit.addEventListener('click', ()=>{
+  const ans = Number(miniAnswer.value);
+  if(!miniArea || miniArea.style.display === 'none') return;
+  if(ans === currentMiniAnswer){
+    // correct
+    const addedCoins = applyCoinMultiplier(1);
+    state.coins += addedCoins;
+    const addedExp = applyExpMultiplier(0.1);
+    increaseProgress(addedExp);
+    showNotification('coins', `+${addedCoins} монета, +${addedExp}% опыта`);
+  } else {
+    // wrong
+    state.coins = Math.max(0, state.coins - 1);
+    const penalty = applyExpMultiplier(-0.5);
+    increaseProgress(penalty);
+    showNotification('exp', `-0.5% опыта, -1 монета`);
+  }
+  miniArea.style.display='none';
+  saveState();
+  updateUI();
+});
+
+/* ======== SHOP (purchase multipliers) ======== */
+const COIN_MULT_MS = 10*60*1000; // 10 minutes
+const EXP_MULT_MS  = 15*60*1000; // 15 minutes
+buyCoins.addEventListener('click', ()=>{
+  // extend current coinMultUntil by COIN_MULT_MS (if in future add, else set now+duration)
+  const before = Math.max(0, state.coinMultUntil - nowMs());
+  state.coinMultUntil = Math.max(state.coinMultUntil, nowMs()) + COIN_MULT_MS;
+  saveState();
+  updateUI();
+  showNotification('buy', `Куплено x2 монет. Осталось: ${formatRemaining(state.coinMultUntil - nowMs())}`);
+});
+buyExp.addEventListener('click', ()=>{
+  state.expMultUntil = Math.max(state.expMultUntil, nowMs()) + EXP_MULT_MS;
+  saveState();
+  updateUI();
+  showNotification('buy', `Куплено x2 опыта. Осталось: ${formatRemaining(state.expMultUntil - nowMs())}`);
+});
+
+/* ======== Catch animals page ======== */
+function makeGrid(){
+  catchGrid.innerHTML = '';
+  // 5x5 grid of random emoji cat/dog
+  for(let i=0;i<25;i++){
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    const isCat = Math.random() < 0.5;
+    cell.textContent = isCat ? '🐱' : '🐶';
+    cell.dataset.pet = isCat ? 'cat' : 'dog';
+    cell.addEventListener('click', onCatchClick);
+    catchGrid.appendChild(cell);
+  }
+}
+function clearGrid(){
+  catchGrid.innerHTML = '';
+}
+function onCatchClick(e){
+  // enforce overall catch cooldown
+  if(nowMs() < state.catchAvailableAt){
+    const rem = state.catchAvailableAt - nowMs();
+    showNotification('exp', `Отлов доступен через ${formatRemaining(rem)}`);
+    return;
+  }
+  const cell = e.currentTarget;
+  if(cell.classList.contains('disabled')) return;
+  // random reward: either coins only, exp only, or both
+  const typeRoll = Math.random();
+  let coinsGain = 0;
+  let expGain = 0;
+  if(typeRoll < 0.33){
+    // coins only
+    coinsGain = Math.floor(Math.random()*5)+1; //1..5
+  } else if(typeRoll < 0.66){
+    expGain = +(Math.random()*(0.5-0.2)+0.2).toFixed(2); //0.2..0.5
+  } else {
+    coinsGain = Math.floor(Math.random()*5)+1;
+    expGain = +(Math.random()*(0.5-0.2)+0.2).toFixed(2);
+  }
+  // apply multipliers
+  const coinsFinal = applyCoinMultiplier(coinsGain);
+  const expFinal = applyExpMultiplier(expGain);
+  if(coinsFinal>0 && expFinal>0){
+    state.coins += coinsFinal;
+    increaseProgress(expFinal);
+    showNotification('coins', `Вы поймали ${cell.dataset.pet==='cat'?'кота':'собаку'} и получили +${coinsFinal} монет и +${expFinal}% опыта`);
+  } else if(coinsFinal>0){
+    state.coins += coinsFinal;
+    showNotification('coins', `Вы поймали ${cell.dataset.pet==='cat'?'кота':'собаку'} и получили +${coinsFinal} монет`);
+  } else if(expFinal>0){
+    increaseProgress(expFinal);
+    showNotification('exp', `Вы поймали ${cell.dataset.pet==='cat'?'кота':'собаку'} и получили +${expFinal}% опыта`);
+  } else {
+    showNotification('exp', `Ничего не получилось — попробуйте ещё`);
+  }
+  // optional: mark cell disabled after catch (so user sees it's caught)
+  cell.classList.add('disabled');
+  // set global catch cooldown to 5 minutes from now
+  state.catchAvailableAt = nowMs() + 5*60*1000;
+  saveState();
+  updateUI();
+}
+
+/* ======== Navigation ======== */
+function showPage(name){
+  pageMain.classList.remove('active');
+  pageShop.classList.remove('active');
+  pageCatch.classList.remove('active');
+  if(name==='main'){ pageMain.classList.add('active'); }
+  if(name==='shop'){ pageShop.classList.add('active'); }
+  if(name==='catch'){ pageCatch.classList.add('active'); }
+}
+openShop.addEventListener('click', ()=> { showPage('shop'); });
+shopHome.addEventListener('click', ()=> { showPage('main'); });
+openCatch.addEventListener('click', ()=> { showPage('catch'); makeGrid(); });
+catchHome.addEventListener('click', ()=> { showPage('main'); });
+refreshGrid.addEventListener('click', ()=> makeGrid());
+clearGrid.addEventListener('click', ()=> clearGrid());
+
+/* ======== Periodic tick ======== */
+function tick(){
+  // restore feed if time passed
+  if(state.feedCount <= 0 && state.feedRestoreAt && nowMs() >= state.feedRestoreAt){
+    state.feedCount = 5;
+    state.feedRestoreAt = 0;
+    showNotification('exp','Кормления восстановлены (5)');
+  }
+  // clear expired multipliers
+  if(state.coinMultUntil && nowMs() >= state.coinMultUntil){
+    state.coinMultUntil = 0;
+    showNotification('coins','x2 монет закончилось');
+  }
+  if(state.expMultUntil && nowMs() >= state.expMultUntil){
+    state.expMultUntil = 0;
+    showNotification('exp','x2 опыта закончилось');
+  }
+  // bonus availability handled in UI
+  saveState();
+  updateUI();
+}
+setInterval(tick, 1000);
+
+/* ======== Init load ======== */
+loadState();
+updateUI();
+
+/* ======== Home button for main page already present above, also ensure shop/catch have home buttons. ======== */
+
+/* ======== Ensure UI consistent after load ======== */
+updateUI();
+
 </script>
 </body>
 </html>
