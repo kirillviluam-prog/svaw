@@ -3,14 +3,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Shuffle All The Songs — Shuffle Spotify (Preview)</title>
+  <title>Shuffle All The Songs — Spotify Preview</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <main class="container">
     <header>
       <h1>Shuffle All The Songs</h1>
-      <p class="subtitle">Put all of Spotify on Shuffle — restrict by genre, decade and popularity.</p>
+      <p class="subtitle">
+        Put all of Spotify on Shuffle. Restrict by genre, decade or popularity if you want.
+      </p>
     </header>
 
     <section id="auth">
@@ -32,22 +34,18 @@
       </div>
 
       <div class="meta">
-        <div id="trackTitle" class="title">—</div>
-        <div id="trackArtist" class="muted">—</div>
-        <div class="extra">
-          <div>Genre: <span id="metaGenre">—</span></div>
-          <div>Released: <span id="metaReleased">—</span></div>
-        </div>
-        <div class="shuffle-info">
-          <div>Shuffling — <span id="poolCount">0</span> tracks</div>
-          <div id="connectStatus" class="muted"></div>
-        </div>
+        <div>Genre: <span id="metaGenre">—</span></div>
+        <div>Released: <span id="metaReleased">—</span></div>
+      </div>
+
+      <div class="shuffle-info">
+        Shuffling — <span id="poolCount">0</span> tracks
       </div>
     </section>
 
     <section id="filters" class="hidden">
       <h3>Include only these genres</h3>
-      <input id="genreSearch" placeholder="Search genres or pick from list..." />
+      <input id="genreSearch" placeholder="Search genres..." />
       <div id="genreList" class="listbox"></div>
       <div id="selectedGenres" class="chips"></div>
 
