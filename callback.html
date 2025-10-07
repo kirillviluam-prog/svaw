@@ -1,7 +1,13 @@
+<!doctype html>
+<html>
+<body>
 <script>
 if(location.hash){
+  // Редирект на index.html с hash
   location.replace('/svaw/index.html' + location.hash);
 }else{
   document.body.innerText = 'No token returned.';
 }
 </script>
+</body>
+</html>
