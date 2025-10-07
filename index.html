@@ -3,28 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Мой удивительный питомец</title>
+<title>Мой 3D питомец 2025</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="game">
-    <h1>Мой удивительный питомец</h1>
-    <div id="pet">
-      <img id="pet-img" src="assets/pet_happy.png" alt="Питомец">
+<div class="game-container">
+    <h1>Мой 3D питомец</h1>
+    <div id="pet-container"></div>
+    <div class="stats">
+        <div>Монетки: <span id="coins">0</span></div>
+        <div>Голод: <span id="hunger">50</span>%</div>
+        <div>Счастье: <span id="happiness">50</span>%</div>
     </div>
-    <div id="stats">
-      <p>Сытость: <span id="hunger">100</span></p>
-      <p>Настроение: <span id="mood">100</span></p>
-      <p>Чистота: <span id="clean">100</span></p>
-      <p>Энергия: <span id="energy">100</span></p>
+    <div class="actions">
+        <button onclick="feedPet()">Покормить</button>
+        <button onclick="playWithPet()">Поиграть</button>
+        <button onclick="cleanPet()">Уборка</button>
     </div>
-    <div id="actions">
-      <button onclick="feedPet()">Покормить</button>
-      <button onclick="playWithPet()">Играть</button>
-      <button onclick="cleanPet()">Помыть</button>
-      <button onclick="restPet()">Отдохнуть</button>
-    </div>
-  </div>
-<script src="game.js"></script>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r152/three.min.js"></script>
+<script src="main.js"></script>
 </body>
 </html>
