@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>🎲 Рандомный пост ВКонтакте</title>
+  <title>🎲 Рандом VK</title>
   <style>
     body {
       font-family: sans-serif;
@@ -11,45 +11,68 @@
       align-items: center;
       justify-content: center;
       height: 100vh;
-      background: #f4f4f4;
+      background: linear-gradient(135deg, #dfe9f3, #ffffff);
+      margin: 0;
+    }
+    h1 {
+      margin-bottom: 30px;
+    }
+    .btn-container {
+      display: flex;
+      gap: 15px;
     }
     button {
-      padding: 12px 24px;
-      font-size: 18px;
+      background: #4a76a8;
+      color: #fff;
       border: none;
       border-radius: 8px;
-      background: #4a76a8;
-      color: white;
+      padding: 12px 18px;
+      font-size: 16px;
       cursor: pointer;
-      transition: background 0.3s;
+      transition: transform 0.15s ease, background 0.3s;
     }
     button:hover {
       background: #3b5d85;
+      transform: scale(1.05);
     }
     p {
-      margin-top: 20px;
-      font-size: 16px;
-      color: #333;
+      margin-top: 25px;
+      font-size: 14px;
+      color: #444;
+      text-align: center;
+      max-width: 320px;
+      line-height: 1.4em;
     }
   </style>
 </head>
 <body>
 
-  <h1>🎲 Рандомный пост ВКонтакте</h1>
-  <button id="randomBtn">Открыть случайный пост</button>
-  <p>Нажимай и телепортируйся в глубины VK 😎</p>
+  <h1>🎲 Рандом ВКонтакте</h1>
+
+  <div class="btn-container">
+    <button id="randomUserBtn">👤 Случайный пользователь</button>
+    <button id="randomGroupBtn">🏠 Случайное сообщество</button>
+  </div>
+
+  <p>Нажимай на кнопки и телепортируйся по VK 😎<br>
+  Если страница не найдена — просто жми ещё раз.</p>
 
   <script>
-    document.getElementById('randomBtn').addEventListener('click', () => {
-      // Случайный выбор владельца: чаще сообщества, реже пользователи
-      const isGroup = Math.random() < 0.7;
-      const ownerId = isGroup 
-        ? -Math.floor(Math.random() * 200000000)   // группы
-        : Math.floor(Math.random() * 800000000);   // пользователи
+    const userBtn = document.getElementById('randomUserBtn');
+    const groupBtn = document.getElementById('randomGroupBtn');
 
-      const postId = Math.floor(Math.random() * 1000000) + 1; // наугад
+    userBtn.addEventListener('click', () => {
+      // Примерный диапазон ID пользователей
+      const userId = Math.floor(Math.random() * 800000000) + 1;
+      const url = `https://vk.com/id${userId}`;
+      window.location.href = url;
+    });
 
-      const url = `https://vk.com/wall${ownerId}_${postId}`;
+    groupBtn.addEventListener('click', () => {
+      // ID сообществ начинаются с 1, с отрицательным знаком в API
+      // но в ссылках просто club<ID>
+      const groupId = Math.floor(Math.random() * 200000000) + 1;
+      const url = `https://vk.com/club${groupId}`;
       window.location.href = url;
     });
   </script>
